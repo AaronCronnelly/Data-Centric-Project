@@ -54,17 +54,17 @@ app.listen(port, () => {
 
 // Routes
 // Home Page
+// Home Page
 app.get('/', (req, res) => {
     const content = "Home Page";
     res.render('home', { layout: 'layout', content: content });
 });
 
-
 // Stores Page
 app.get('/stores', async (req, res) => {
     try {
         const stores = await queryMySQL('SELECT * FROM store');
-        res.render('stores', { stores, layout: 'layout' });
+        res.render('stores', { stores: stores, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching stores from MySQL: ' + err);
         res.status(500).send('Internal Server Error');
@@ -75,7 +75,7 @@ app.get('/stores', async (req, res) => {
 app.get('/products', async (req, res) => {
     try {
         const products = await queryMySQL('SELECT * FROM product');
-        res.render('products', { products, layout: 'layout' });
+        res.render('products', { products: products, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching products from MySQL: ' + err);
         res.status(500).send('Internal Server Error');
@@ -86,7 +86,7 @@ app.get('/products', async (req, res) => {
 app.get('/managers', async (req, res) => {
     try {
         const managers = await queryMongoDB('managers');
-        res.render('managers', { managers, layout: 'layout' });
+        res.render('managers', { managers: managers, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching managers from MongoDB: ' + err);
         res.status(500).send('Internal Server Error');
@@ -110,43 +110,3 @@ app.get('/managers/add', (req, res) => {
     res.render('addManager', { layout: 'layout' });
 });
 
-// Handle the form submission to add a manager to MongoDB
-app.post('/managers/add', async (req, res) => {
-    const { managerId, name, salary } = req.body;
-
-    try {
-        const managersCollection = mongoClient.db('proj2023MongoDB').collection('managers');
-        await managersCollection.insertOne({ _id: managerId, name, salary: parseFloat(salary) });
-        res.redirect('/managers');
-    } catch (err) {
-        console.error('Error adding manager to MongoDB: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Helper function to query MySQL
-function queryMySQL(sql, params) {
-    return new Promise((resolve, reject) => {
-        mysqlPool.query(sql, params, (err, results) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(results);
-            }
-        });
-    });
-}
-
-// Helper function to query MongoDB
-function queryMongoDB(collectionName) {
-    return new Promise((resolve, reject) => {
-        const collection = mongoClient.db('proj2023MongoDB').collection(collectionName);
-        collection.find({}).toArray((err, results) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(results);
-            }
-        });
-    });
-}
