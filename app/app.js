@@ -2,9 +2,22 @@ const express = require('express');
 const mysql = require('mysql');
 const mongodb = require('mongodb');
 const bodyParser = require('body-parser');
+const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Set EJS as the view engine and use express-ejs-layouts
+app.set('view engine', 'ejs');
+app.use(expressLayouts);
+app.set('layout', 'layout/layout');
+
+// Content Security Policy
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'");
+    next();
+});
+
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -42,14 +55,16 @@ app.listen(port, () => {
 // Routes
 // Home Page
 app.get('/', (req, res) => {
-    res.render('home');
+    const content = "Home Page";
+    res.render('home', { layout: 'layout', content: content });
 });
+
 
 // Stores Page
 app.get('/stores', async (req, res) => {
     try {
         const stores = await queryMySQL('SELECT * FROM store');
-        res.render('stores', { stores });
+        res.render('stores', { stores, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching stores from MySQL: ' + err);
         res.status(500).send('Internal Server Error');
@@ -60,7 +75,7 @@ app.get('/stores', async (req, res) => {
 app.get('/products', async (req, res) => {
     try {
         const products = await queryMySQL('SELECT * FROM product');
-        res.render('products', { products });
+        res.render('products', { products, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching products from MySQL: ' + err);
         res.status(500).send('Internal Server Error');
@@ -71,7 +86,7 @@ app.get('/products', async (req, res) => {
 app.get('/managers', async (req, res) => {
     try {
         const managers = await queryMongoDB('managers');
-        res.render('managers', { managers });
+        res.render('managers', { managers, layout: 'layout' });
     } catch (err) {
         console.error('Error fetching managers from MongoDB: ' + err);
         res.status(500).send('Internal Server Error');
@@ -83,7 +98,7 @@ app.get('/stores/edit/:sid', async (req, res) => {
     const { sid } = req.params;
     try {
         const store = await queryMySQL('SELECT * FROM store WHERE sid = ?', [sid]);
-        res.render('editStore', { store: store[0] });
+        res.render('editStore', { store: store[0], layout: 'layout' });
     } catch (err) {
         console.error('Error fetching store from MySQL: ' + err);
         res.status(500).send('Internal Server Error');
@@ -92,7 +107,7 @@ app.get('/stores/edit/:sid', async (req, res) => {
 
 // Add Manager Page
 app.get('/managers/add', (req, res) => {
-    res.render('addManager');
+    res.render('addManager', { layout: 'layout' });
 });
 
 // Handle the form submission to add a manager to MongoDB
