@@ -88,8 +88,35 @@ app.get('/stores', async (req, res, next) => {
     }
 });
 
+// Add this route handler after your GET /stores/edit/:sid route
+app.post('/stores/edit/:sid', async (req, res, next) => {
+    const { sid } = req.params;
+    const { location, mgrid } = req.body;
 
+    try {
+        // Perform validation and update operation in the database
+        // You need to implement the update operation using your queryMySQL function
+        await queryMySQL('UPDATE store SET location=?, mgrid=? WHERE sid=?', [location, mgrid, sid]);
 
+        // Redirect to the stores page after updating
+        res.redirect('/stores');
+    } catch (err) {
+        console.error('Error updating store: ' + err);
+        next(err);
+    }
+});
+
+app.get('/stores/edit/:sid', async (req, res, next) => {
+    const { sid } = req.params;
+
+    try {
+        const store = await queryMySQL('SELECT * FROM store WHERE sid = ?', [sid]);
+        res.render('editStore', { store: store[0], layout: 'layout', content: "Edit Store Page" });
+    } catch (err) {
+        console.error('Error fetching store from MySQL: ' + err);
+        next(err);
+    }
+});
 
 // Products Page
 app.get('/products', async (req, res, next) => {
