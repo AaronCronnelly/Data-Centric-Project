@@ -9,15 +9,14 @@ const port = process.env.PORT || 3000;
 
 // Set EJS as the view engine and use express-ejs-layouts
 app.set('view engine', 'ejs');
-app.use(expressLayouts);
-app.set('layout', 'layout/layout');
+// app.use(expressLayouts);
+// app.set('layout', 'views/layout');
 
 // Content Security Policy
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'");
     next();
 });
-
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -47,66 +46,117 @@ async function connectMongoDB() {
     }
 }
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+
+// Define queryMySQL function
+function queryMySQL(sql, params) {
+    return new Promise((resolve, reject) => {
+        mysqlPool.query(sql, params, (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
+// Define queryMongoDB function
+function queryMongoDB(collectionName) {
+    return new Promise((resolve, reject) => {
+        const collection = mongoClient.db('proj2023MongoDB').collection(collectionName);
+        collection.find({}).toArray((err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
+// Connect to MongoDB
+connectMongoDB();
 
 // Routes
-// Home Page
+app.get('/stores', async (req, res, next) => {
+    try {
+        const stores = await queryMySQL('SELECT * FROM store');
+        res.render('stores', { stores, layout: 'layout', content: 'Stores Page' });
+    } catch (err) {
+        console.error('Error fetching stores from MySQL: ' + err);
+        next(err);
+    }
+});
+
+
+
+
+// Products Page
+app.get('/products', async (req, res, next) => {
+    try {
+        const products = await queryMySQL('SELECT * FROM product');
+        console.log('Products data:', products); // Check if data is retrieved
+        res.render('products', {
+            products: products,
+            layout: 'layout',
+            content: 'Products Page',
+            columns: ['Product ID', 'Description', 'Store ID', 'Location', 'Price']
+        });
+    } catch (err) {
+        console.error('Error fetching products from MySQL: ' + err);
+        next(err);
+    }
+});
+
+// Managers Page
+app.get('/managers', async (req, res, next) => {
+    try {
+        const managers = await queryMongoDB('managers');
+        console.log('Managers data:', managers); // Check if data is retrieved
+        res.render('managers', {
+            managers: managers,
+            layout: 'layout',
+            content: 'Managers Page',
+            columns: ['Manager ID', 'Name', 'Salary']
+        });
+    } catch (err) {
+        console.error('Error fetching managers from MongoDB: ' + err);
+        next(err);
+    }
+});
+
+
+// Edit Store Page
+app.get('/stores/edit/:sid', async (req, res, next) => {
+    const { sid } = req.params;
+    try {
+        const store = await queryMySQL('SELECT * FROM store WHERE sid = ?', [sid]);
+        res.render('editStore', { store: store[0], layout: 'layout', content: "Edit Store Page" });
+    } catch (err) {
+        console.error('Error fetching store from MySQL: ' + err);
+        next(err); // Pass the error to the next middleware
+    }
+});
+
+// Add Manager Page
+app.get('/managers/add', (req, res) => {
+    res.render('addManager', { layout: 'layout', content: "Add Manager Page" });
+});
+
 // Home Page
 app.get('/', (req, res) => {
     const content = "Home Page";
     res.render('home', { layout: 'layout', content: content });
 });
 
-// Stores Page
-app.get('/stores', async (req, res) => {
-    try {
-        const stores = await queryMySQL('SELECT * FROM store');
-        res.render('stores', { stores: stores, layout: 'layout' });
-    } catch (err) {
-        console.error('Error fetching stores from MySQL: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
+//  error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send(`Something went wrong! Error details: ${err.message}`);
 });
 
-// Products Page
-app.get('/products', async (req, res) => {
-    try {
-        const products = await queryMySQL('SELECT * FROM product');
-        res.render('products', { products: products, layout: 'layout' });
-    } catch (err) {
-        console.error('Error fetching products from MySQL: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
-});
 
-// Managers Page
-app.get('/managers', async (req, res) => {
-    try {
-        const managers = await queryMongoDB('managers');
-        res.render('managers', { managers: managers, layout: 'layout' });
-    } catch (err) {
-        console.error('Error fetching managers from MongoDB: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
-
-// Edit Store Page
-app.get('/stores/edit/:sid', async (req, res) => {
-    const { sid } = req.params;
-    try {
-        const store = await queryMySQL('SELECT * FROM store WHERE sid = ?', [sid]);
-        res.render('editStore', { store: store[0], layout: 'layout' });
-    } catch (err) {
-        console.error('Error fetching store from MySQL: ' + err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Add Manager Page
-app.get('/managers/add', (req, res) => {
-    res.render('addManager', { layout: 'layout' });
-});
-
