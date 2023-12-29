@@ -1,0 +1,19 @@
+<% layout('layout') -%>
+
+<section>
+    <h2>Add Manager</h2>
+    <!-- Form for adding a manager will be added here -->
+    <form action="/managers/add" method="POST">
+        <!-- Input fields and submit button -->
+        <label for="managerId">Manager ID:</label>
+        <input type="text" id="managerId" name="managerId" required>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" name="salary" required>
+
+        <button type="submit">Add Manager</button>
+    </form>
+</section>
