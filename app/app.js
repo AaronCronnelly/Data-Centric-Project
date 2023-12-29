@@ -11,9 +11,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // MySQL Connection
 const mysqlConnection = mysql.createConnection({
-  host: 'your-mysql-host',
-  user: 'your-mysql-username',
-  password: 'your-mysql-password',
+  host: 'localhost',
+  user: 'root',
+  password: 'Coolermaster',
   database: 'proj2023',
 });
 
@@ -26,7 +26,7 @@ mysqlConnection.connect((err) => {
 });
 
 // MongoDB Connection
-const mongoClient = new mongodb.MongoClient('your-mongodb-connection-string', {
+const mongoClient = new mongodb.MongoClient('mongodb://localhost:27017/proj2023MongoDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -46,3 +46,8 @@ mongoClient.connect((err) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+app.get('/', (req, res) => {
+    res.send('Welcome to the Home Page!');
+});
+
