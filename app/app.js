@@ -30,11 +30,13 @@ const mysqlPool = mysql.createPool({
     database: 'proj2023',
 });
 
-// MongoDB Connection
+
 const mongoClient = new mongodb.MongoClient('mongodb://localhost:27017/proj2023MongoDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
+
+
 
 // Connect to MongoDB
 async function connectMongoDB() {
@@ -45,6 +47,7 @@ async function connectMongoDB() {
         console.error('MongoDB connection failed: ' + err.stack);
     }
 }
+
 
 // Connect to MongoDB
 connectMongoDB();
@@ -63,25 +66,24 @@ function queryMySQL(sql, params) {
 }
 
 // Define queryMongoDB function
-function queryMongoDB(collectionName) {
+async function queryMongoDB(collectionName, query) {
     console.log('Entering queryMongoDB');
-    const startTime = new Date();
 
-    return new Promise((resolve, reject) => {
+    const startTime = new Date();
+    try {
         const collection = mongoClient.db('proj2023MongoDB').collection(collectionName);
-        collection.find({}).toArray((err, results) => {
-            if (err) {
-                console.error('MongoDB query error:', err);
-                reject(err);
-            } else {
-                const endTime = new Date();
-                const duration = endTime - startTime;
-                console.log(`MongoDB query duration: ${duration} ms`);
-                console.log('MongoDB query results:', results);
-                resolve(results);
-            }
-        });
-    });
+        const results = await collection.find(query || {}).toArray();  // Use the provided query or an empty object if not provided
+        const endTime = new Date();
+        const duration = endTime - startTime;
+
+        console.log(`MongoDB query duration: ${duration} ms`);
+        console.log('MongoDB query results:', results);
+
+        return results;
+    } catch (err) {
+        console.error('MongoDB query error:', err);
+        throw err;
+    }
 }
 
 
@@ -98,17 +100,38 @@ app.get('/stores', async (req, res, next) => {
     }
 });
 
-// Add this route handler after your GET /stores/edit/:sid route
 app.post('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
     const { location, mgrid } = req.body;
 
     try {
-        // Perform validation and update operation in the database
-        await queryMySQL('UPDATE store SET location=?, mgrid=? WHERE sid=?', [location, mgrid, sid]);
+        // Check if the new Manager ID already exists in MongoDB
+        const isManagerExists = await queryMongoDB('managers', { _id: mgrid });
 
-        // Redirect to the stores page after updating
-        res.redirect('/stores');
+        let errorMessage;
+
+        if (!isManagerExists) {
+            errorMessage = `Manager ID '${mgrid}' doesn't exist in MongoDB.`;
+        } else {
+            // Check if the new Manager ID is already assigned to another store
+            const isManagerAssigned = await queryMySQL('SELECT * FROM store WHERE mgrid = ? AND sid != ?', [mgrid, sid]);
+
+            if (isManagerAssigned.length > 0) {
+                errorMessage = `Manager ID '${mgrid}' is already assigned to another store.`;
+            } else {
+                // Perform validation and update operation in the database
+                await queryMySQL('UPDATE store SET location=?, mgrid=? WHERE sid=?', [location, mgrid, sid]);
+
+                // Redirect to the stores page after updating
+                return res.redirect('/stores');
+            }
+        }
+
+        // Log errorMessage to ensure it's defined
+        console.log('Error Message:', errorMessage);
+
+        // Render the editStore.ejs template with the errorMessage
+        res.render('editStore', { layout: 'layout', store: { sid, location, mgrid }, errorMessage });
     } catch (err) {
         console.error('Error updating store: ' + err);
         next(err);
@@ -126,6 +149,7 @@ app.get('/stores/edit/:sid', async (req, res, next) => {
         next(err);
     }
 });
+
 
 // code is here to add a store but cannot change SID,
 app.get('/stores/add', (req, res) => {
@@ -167,9 +191,10 @@ app.get('/products', async (req, res, next) => {
 
 // Managers Page
 app.get('/managers', async (req, res, next) => {
+    console.log('Hit the /managers route'); // Add this log statement
     try {
         const managers = await queryMongoDB('managers');
-        console.log('Managers data:', managers); // Log data to the console
+        console.log('Managers data:', managers);
         res.render('managers', {
             managers,
             layout: 'layout',
@@ -181,6 +206,7 @@ app.get('/managers', async (req, res, next) => {
         next(err);
     }
 });
+
 
 
 // Edit Store Page
