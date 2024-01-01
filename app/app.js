@@ -203,18 +203,37 @@ app.get('/products/delete/:pid', async (req, res, next) => {
         if (isProductSold.length > 0) {
             // Product is sold, cannot delete
             const errorMessage = `Product with ID '${pid}' is sold in stores and cannot be deleted.`;
-            return res.redirect(`/products?error=${encodeURIComponent(errorMessage)}`);
-        }
 
-        // Product is not sold, delete it from the database
-        await queryMySQL('DELETE FROM product WHERE pid = ?', [pid]);
-        res.redirect('/products');
+            // Fetch the updated product data and render the Products Page with the error message
+            const products = await queryMySQL(`
+                SELECT p.pid, p.productdesc, ps.sid, s.location, ps.price
+                FROM product p
+                LEFT JOIN product_store ps ON p.pid = ps.pid
+                LEFT JOIN store s ON ps.sid = s.sid
+                ORDER BY p.pid
+            `);
+
+            res.render('products', { products, layout: 'layout', content: 'Products Page', error: errorMessage });
+        } else {
+            // Product is not sold, delete it from the database
+            await queryMySQL('DELETE FROM product WHERE pid = ?', [pid]);
+
+            // After successful delete, fetch the updated product data and redirect to Products Page
+            const updatedProducts = await queryMySQL(`
+                SELECT p.pid, p.productdesc, ps.sid, s.location, ps.price
+                FROM product p
+                LEFT JOIN product_store ps ON p.pid = ps.pid
+                LEFT JOIN store s ON ps.sid = s.sid
+                ORDER BY p.pid
+            `);
+            
+            res.render('products', { products: updatedProducts, layout: 'layout', content: 'Products Page' });
+        }
     } catch (err) {
         console.error('Error deleting product: ' + err);
         next(err);
     }
 });
-
 
 
 // Managers Page
@@ -235,6 +254,47 @@ app.get('/managers', async (req, res, next) => {
     }
 });
 
+// Add Manager Page
+app.get('/managers/add', (req, res) => {
+    res.render('addManager', { layout: 'layout', content: "Add Manager Page", error: null });
+});
+
+// Handle Add Manager Form Submission
+app.post('/managers/add', async (req, res, next) => {
+    const { managerId, name, salary } = req.body;
+
+    try {
+        // Perform validation for manager ID, name, and salary
+        // (You can add more specific validation as needed)
+
+        // Check if the manager ID already exists
+        const existingManager = await queryMongoDB('managers', { _id: managerId });
+        if (existingManager.length > 0) {
+            const errorMessage = `Manager ID ${managerId} already taken. Please choose a different ID.`;
+            res.render('addManager', { layout: 'layout', content: "Add Manager Page", error: errorMessage });
+            return; // Stop further processing
+        }
+
+        // Perform insertion into MongoDB
+        const result = await mongoClient.db('proj2023MongoDB').collection('managers').insertOne({
+            _id: managerId,
+            name: name,
+            salary: parseInt(salary), // Convert salary to integer
+        });
+
+        console.log('Manager added:', result.ops[0]);
+
+        // Redirect to the managers page after adding the new manager
+        res.redirect('/managers');
+    } catch (err) {
+        console.error('Error adding manager: ' + err);
+        // Pass the error to the next middleware
+        res.render('addManager', { layout: 'layout', content: "Add Manager Page", error: err.message });
+    }
+});
+
+
+
 // Edit Store Page
 app.get('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
@@ -245,11 +305,6 @@ app.get('/stores/edit/:sid', async (req, res, next) => {
         console.error('Error fetching store from MySQL: ' + err);
         next(err); // Pass the error to the next middleware
     }
-});
-
-// Add Manager Page
-app.get('/managers/add', (req, res) => {
-    res.render('addManager', { layout: 'layout', content: "Add Manager Page" });
 });
 
 // Home Page

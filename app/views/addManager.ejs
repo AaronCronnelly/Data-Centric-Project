@@ -1,18 +1,21 @@
+<!-- addManager.ejs -->
+
 <%- include('layout'); -%>
 
 <section>
     <h2>Add Manager</h2>
-    <!-- Form for adding a manager will be added here -->
-    <form action="/managers/add" method="POST">
-        <!-- Input fields and submit button -->
+    <% if (error) { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+    <form action="/managers/add" method="post">
         <label for="managerId">Manager ID:</label>
-        <input type="text" id="managerId" name="managerId" required>
+        <input type="text" id="managerId" name="managerId" required minlength="4" maxlength="4">
 
         <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="name" required minlength="5">
 
         <label for="salary">Salary:</label>
-        <input type="number" id="salary" name="salary" required>
+        <input type="number" id="salary" name="salary" required min="30000" max="70000">
 
         <button type="submit">Add Manager</button>
     </form>

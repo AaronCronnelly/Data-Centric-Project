@@ -2,9 +2,23 @@
 
 <section>
     <h2>Products</h2>
-    <% if (typeof error !== 'undefined') { %>
-        <p style="color: red;"><%= error %></p>
-    <% } %>
+    <!-- Delete action link with confirmation alert, did it this way as when trying to get it to print to the screen with h tags it wouldn't work-->
+    <script>
+        // Check if there is an error message and show an alert
+        const errorMessage = '<%= typeof error !== "undefined" ? error : "" %>';
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+
+        // Function to handle the Delete link click
+        function handleDeleteClick(event) {
+            const confirmed = confirm('Are you sure you want to delete this product?');
+            
+            if (!confirmed) {
+                event.preventDefault(); // Prevent the default behavior if not confirmed
+            }
+        }
+    </script>
     <table border="1">
         <thead>
             <tr>
@@ -25,8 +39,8 @@
                     <td><%= product.location %></td>
                     <td><%= product.price %></td>
                     <td>
-                        <!-- Delete action link -->
-                        <a href="/products/delete/<%= product.pid %>">Delete</a>
+                        <!-- Delete action link with confirmation alert -->
+                        <a href="/products/delete/<%= product.pid %>" onclick="handleDeleteClick(event)">Delete</a>
                     </td>
                 </tr>
             <% }); %>
