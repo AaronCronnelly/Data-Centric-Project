@@ -4,9 +4,8 @@
 
 <section>
     <h2>Edit Store</h2>
-
-    <% if (locals.errorMessage) { %>
-        <p style="color: red;"><%= locals.errorMessage %></p>
+    <% if (error) { %>
+        <p style="color: red;"><%= error %></p>
     <% } %>
 
     <form action="/stores/edit/<%= store.sid %>" method="post">
@@ -16,7 +15,7 @@
         <label for="mgrid">Manager ID:</label>
         <input type="text" id="mgrid" name="mgrid" value="<%= store.mgrid %>">
 
-      
+        <!-- Add other fields as needed -->
 
         <button type="submit">Update Store</button>
     </form>

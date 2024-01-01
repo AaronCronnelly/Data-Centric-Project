@@ -127,28 +127,28 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
             }
         }
 
-        // Log errorMessage to ensure it's defined
-        console.log('Error Message:', errorMessage);
-
-        // Render the editStore.ejs template with the errorMessage
-        res.render('editStore', { layout: 'layout', store: { sid, location, mgrid }, errorMessage });
+        // Redirect to the edit page with an error query parameter
+        res.redirect(`/stores/edit/${sid}?error=${encodeURIComponent(errorMessage)}`);
     } catch (err) {
         console.error('Error updating store: ' + err);
         next(err);
     }
 });
 
+
 app.get('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
+    const error = req.query.error; // Get the error from the query parameter
 
     try {
         const store = await queryMySQL('SELECT * FROM store WHERE sid = ?', [sid]);
-        res.render('editStore', { store: store[0], layout: 'layout', content: "Edit Store Page" });
+        res.render('editStore', { store: store[0], layout: 'layout', content: "Edit Store Page", error });
     } catch (err) {
         console.error('Error fetching store from MySQL: ' + err);
         next(err);
     }
 });
+
 
 
 // code is here to add a store but cannot change SID,
