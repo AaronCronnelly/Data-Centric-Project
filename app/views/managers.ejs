@@ -1,0 +1,26 @@
+<!-- managers.ejs -->
+
+<%- include('layout'); -%>
+
+<section>
+    <h2>Managers</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Manager ID</th>
+                <th>Name</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% managers.forEach(manager => { %>
+                <tr>
+                    <!-- Display manager information -->
+                    <td><%= manager._id %></td>
+                    <td><%= manager.name %></td>
+                    <td><%= manager.salary %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</section>

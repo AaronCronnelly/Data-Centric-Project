@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Centric Web App</title>
+</head>
+<body>
+    <header>
+        <h1>Data Centric Web App</h1>
+        <nav>
+            <ul>
+                <li><a href="/stores">Stores</a></li>
+                <li><a href="/products">Products</a></li>
+                <li><a href="/managers">Managers</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <%- content %>
+    </main>
+
+    <footer>
+        <p>&copy; <%= new Date().getFullYear() %> Your Web App</p>
+    </footer>
+</body>
+</html>
