@@ -1,18 +1,35 @@
+<%- include('layout'); -%>
 
 <section>
     <h2>Products</h2>
-    <ul>
-        <!-- Display product information here -->
-        <% products.forEach(product => { %>
-            <li>
-                <strong>Product ID:</strong> <%= product.pid %><br>
-                <strong>Description:</strong> <%= product.productdesc %><br>
-                <strong>Store ID:</strong> <%= product.sid %><br>
-                <strong>Location:</strong> <%= product.location %><br>
-                <strong>Price:</strong> <%= product.price %>
-            </li>
+    <% if (typeof error !== 'undefined') { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Description</th>
+                <th>Store ID</th>
+                <th>Location</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% products.forEach(product => { %>
+                <tr>
+                    <td><%= product.pid %></td>
+                    <td><%= product.productdesc %></td>
+                    <td><%= product.sid %></td>
+                    <td><%= product.location %></td>
+                    <td><%= product.price %></td>
+                    <td>
+                        <!-- Delete action link -->
+                        <a href="/products/delete/<%= product.pid %>">Delete</a>
+                    </td>
+                </tr>
             <% }); %>
-        </ul>
-    </section>
-    
-  
+        </tbody>
+    </table>
+</section>

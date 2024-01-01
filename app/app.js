@@ -135,8 +135,6 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
     }
 });
 
-
-
 app.get('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
     const error = req.query.error; // Get the error from the query parameter
@@ -149,8 +147,6 @@ app.get('/stores/edit/:sid', async (req, res, next) => {
         next(err);
     }
 });
-
-
 
 // code is here to add a store but cannot change SID,
 app.get('/stores/add', (req, res) => {
@@ -172,23 +168,54 @@ app.post('/stores/add', async (req, res, next) => {
     }
 });
 
-
 // Products Page
 app.get('/products', async (req, res, next) => {
     try {
-        const products = await queryMySQL('SELECT * FROM product');
-        console.log('Products data:', products); // Check if data is retrieved
+        const products = await queryMySQL(`
+            SELECT p.pid, p.productdesc, ps.sid, s.location, ps.price
+            FROM product p
+            LEFT JOIN product_store ps ON p.pid = ps.pid
+            LEFT JOIN store s ON ps.sid = s.sid
+            ORDER BY p.pid
+        `);
+
         res.render('products', {
             products: products,
             layout: 'layout',
             content: 'Products Page',
-            columns: ['Product ID', 'Description', 'Store ID', 'Location', 'Price']
+            columns: ['Product ID', 'Product Description', 'Store ID', 'Location', 'Price']
         });
     } catch (err) {
         console.error('Error fetching products from MySQL: ' + err);
         next(err);
     }
 });
+
+
+// Delete Product
+app.get('/products/delete/:pid', async (req, res, next) => {
+    const { pid } = req.params;
+
+    try {
+        // Check if the product is sold in any store
+        const isProductSold = await queryMySQL('SELECT * FROM product_store WHERE pid = ?', [pid]);
+
+        if (isProductSold.length > 0) {
+            // Product is sold, cannot delete
+            const errorMessage = `Product with ID '${pid}' is sold in stores and cannot be deleted.`;
+            return res.redirect(`/products?error=${encodeURIComponent(errorMessage)}`);
+        }
+
+        // Product is not sold, delete it from the database
+        await queryMySQL('DELETE FROM product WHERE pid = ?', [pid]);
+        res.redirect('/products');
+    } catch (err) {
+        console.error('Error deleting product: ' + err);
+        next(err);
+    }
+});
+
+
 
 // Managers Page
 app.get('/managers', async (req, res, next) => {
@@ -207,8 +234,6 @@ app.get('/managers', async (req, res, next) => {
         next(err);
     }
 });
-
-
 
 // Edit Store Page
 app.get('/stores/edit/:sid', async (req, res, next) => {
@@ -229,8 +254,7 @@ app.get('/managers/add', (req, res) => {
 
 // Home Page
 app.get('/', (req, res) => {
-    const content = "Home Page";
-    res.render('home', { layout: 'layout', content: content });
+    res.render('home', { layout: 'layout' });
 });
 
 //  error handler
@@ -238,7 +262,6 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send(`Something went wrong! Error details: ${err.message}`);
 });
-
 
 // Start the server
 app.listen(port, () => {
