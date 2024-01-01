@@ -105,12 +105,12 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
     const { location, mgrid } = req.body;
 
     try {
-        // Check if the new Manager ID already exists in MongoDB
+        // Check if the new Manager ID exists in MongoDB
         const isManagerExists = await queryMongoDB('managers', { _id: mgrid });
 
         let errorMessage;
 
-        if (!isManagerExists) {
+        if (!isManagerExists || isManagerExists.length === 0) {
             errorMessage = `Manager ID '${mgrid}' doesn't exist in MongoDB.`;
         } else {
             // Check if the new Manager ID is already assigned to another store
@@ -134,6 +134,7 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
         next(err);
     }
 });
+
 
 
 app.get('/stores/edit/:sid', async (req, res, next) => {
