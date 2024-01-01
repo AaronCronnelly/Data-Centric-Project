@@ -1,8 +1,13 @@
 <%- include('layout'); -%>
 
+<!-- Section for displaying stores -->
 <section>
+    <!-- Heading for the section -->
     <h2>Stores</h2>
+
+    <!-- Table for displaying store information -->
     <table border="1">
+        <!-- Table header with column names -->
         <thead>
             <tr>
                 <th>SID</th>
@@ -12,16 +17,22 @@
             </tr>
         </thead>
         <tbody>
+            <!-- Loop through each store in the array and display their information -->
             <% stores.forEach(store => { %>
                 <tr>
+                    <!-- Display store information in each row -->
                     <td><%= store.sid %></td>
                     <td><%= store.location %></td>
                     <td><%= store.mgrid %></td>
-                    <td><a href="/stores/edit/<%= store.sid %>">Update</a></td>
+                    <td>
+                        <!-- Update action link -->
+                        <a href="/stores/edit/<%= store.sid %>">Update</a>
+                    </td>
                 </tr>
             <% }); %>
         </tbody>
     </table>
 
+    <!-- Link to add a new store -->
     <a href="/stores/add">Add Store</a>
 </section>

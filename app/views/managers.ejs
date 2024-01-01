@@ -2,12 +2,17 @@
 
 <%- include('layout'); -%>
 
+<!-- Section for displaying managers -->
 <section>
+    <!-- Heading for the section -->
     <h2>Managers</h2>
-    <!-- Add Manager link -->
+
+    <!-- Link to add a new manager -->
     <a href="/managers/add">Add Manager</a>
 
+    <!-- Table for displaying manager information -->
     <table border="1">
+        <!-- Table header with column names -->
         <thead>
             <tr>
                 <th>Manager ID</th>
@@ -16,9 +21,10 @@
             </tr>
         </thead>
         <tbody>
+            <!-- Loop through each manager in the array and display their information -->
             <% managers.forEach(manager => { %>
                 <tr>
-                    <!-- Display manager information -->
+                    <!-- Display manager information in each row -->
                     <td><%= manager._id %></td>
                     <td><%= manager.name %></td>
                     <td><%= manager.salary %></td>

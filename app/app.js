@@ -1,24 +1,26 @@
-const express = require('express');
-const mysql = require('mysql');
-const mongodb = require('mongodb');
-const bodyParser = require('body-parser');
-const expressLayouts = require('express-ejs-layouts');
+// Import required packages
+const express = require('express'); // Express for web framework
+const mysql = require('mysql'); // MySQL for database interaction
+const mongodb = require('mongodb'); // MongoDB for NoSQL database
+const bodyParser = require('body-parser'); // Body parser for handling HTTP request data
+const expressLayouts = require('express-ejs-layouts'); // Layouts for EJS templates
 
+// Create an Express app
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000; // Set the port
 
 // Set EJS as the view engine and use express-ejs-layouts
 app.set('view engine', 'ejs');
 // app.use(expressLayouts);
 // app.set('layout', 'views/layout');
 
-// Content Security Policy
+// Content Security Policy middleware
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'");
     next();
 });
 
-// Middleware
+// Middleware for parsing URL-encoded data
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // MySQL Connection Pool
@@ -30,13 +32,11 @@ const mysqlPool = mysql.createPool({
     database: 'proj2023',
 });
 
-
+// MongoDB Connection
 const mongoClient = new mongodb.MongoClient('mongodb://localhost:27017/proj2023MongoDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
-
-
 
 // Connect to MongoDB
 async function connectMongoDB() {
@@ -47,7 +47,6 @@ async function connectMongoDB() {
         console.error('MongoDB connection failed: ' + err.stack);
     }
 }
-
 
 // Connect to MongoDB
 connectMongoDB();
@@ -86,10 +85,9 @@ async function queryMongoDB(collectionName, query) {
     }
 }
 
-
-
-
 // Routes
+
+// Get all stores
 app.get('/stores', async (req, res, next) => {
     try {
         const stores = await queryMySQL('SELECT * FROM store');
@@ -100,6 +98,7 @@ app.get('/stores', async (req, res, next) => {
     }
 });
 
+// Edit store details
 app.post('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
     const { location, mgrid } = req.body;
@@ -135,6 +134,7 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
     }
 });
 
+// Get edit store page
 app.get('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
     const error = req.query.error; // Get the error from the query parameter
@@ -148,11 +148,12 @@ app.get('/stores/edit/:sid', async (req, res, next) => {
     }
 });
 
-// code is here to add a store but cannot change SID,
+// Add store page
 app.get('/stores/add', (req, res) => {
     res.render('addStore', { layout: 'layout', content: 'Add Store Page' });
 });
 
+// Add new store
 app.post('/stores/add', async (req, res, next) => {
     const { location, mgrid } = req.body;
 
@@ -191,7 +192,6 @@ app.get('/products', async (req, res, next) => {
     }
 });
 
-
 // Delete Product
 app.get('/products/delete/:pid', async (req, res, next) => {
     const { pid } = req.params;
@@ -226,7 +226,7 @@ app.get('/products/delete/:pid', async (req, res, next) => {
                 LEFT JOIN store s ON ps.sid = s.sid
                 ORDER BY p.pid
             `);
-            
+
             res.render('products', { products: updatedProducts, layout: 'layout', content: 'Products Page' });
         }
     } catch (err) {
@@ -234,7 +234,6 @@ app.get('/products/delete/:pid', async (req, res, next) => {
         next(err);
     }
 });
-
 
 // Managers Page
 app.get('/managers', async (req, res, next) => {
@@ -265,7 +264,7 @@ app.post('/managers/add', async (req, res, next) => {
 
     try {
         // Perform validation for manager ID, name, and salary
-        // (You can add more specific validation as needed)
+       
 
         // Check if the manager ID already exists
         const existingManager = await queryMongoDB('managers', { _id: managerId });
@@ -293,8 +292,6 @@ app.post('/managers/add', async (req, res, next) => {
     }
 });
 
-
-
 // Edit Store Page
 app.get('/stores/edit/:sid', async (req, res, next) => {
     const { sid } = req.params;
@@ -312,7 +309,7 @@ app.get('/', (req, res) => {
     res.render('home', { layout: 'layout' });
 });
 
-//  error handler
+// Error handler middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send(`Something went wrong! Error details: ${err.message}`);

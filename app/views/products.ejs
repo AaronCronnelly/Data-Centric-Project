@@ -1,8 +1,11 @@
 <%- include('layout'); -%>
 
+<!-- Section for displaying products -->
 <section>
+    <!-- Heading for the section -->
     <h2>Products</h2>
-    <!-- Delete action link with confirmation alert, did it this way as when trying to get it to print to the screen with h tags it wouldn't work-->
+
+    <!-- Script to handle error message display and delete confirmation -->
     <script>
         // Check if there is an error message and show an alert
         const errorMessage = '<%= typeof error !== "undefined" ? error : "" %>';
@@ -19,7 +22,10 @@
             }
         }
     </script>
+
+    <!-- Table for displaying product information -->
     <table border="1">
+        <!-- Table header with column names -->
         <thead>
             <tr>
                 <th>Product ID</th>
@@ -31,8 +37,10 @@
             </tr>
         </thead>
         <tbody>
+            <!-- Loop through each product in the array and display their information -->
             <% products.forEach(product => { %>
                 <tr>
+                    <!-- Display product information in each row -->
                     <td><%= product.pid %></td>
                     <td><%= product.productdesc %></td>
                     <td><%= product.sid %></td>

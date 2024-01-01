@@ -2,21 +2,30 @@
 
 <%- include('layout'); -%>
 
+<!-- Section for editing store details -->
 <section>
+    <!-- Heading for the section -->
     <h2>Edit Store</h2>
+
+    <!-- Display error message if it exists -->
     <% if (error) { %>
         <p style="color: red;"><%= error %></p>
     <% } %>
 
+    <!-- Form for updating store information -->
     <form action="/stores/edit/<%= store.sid %>" method="post">
+
+        <!-- Input field for store location -->
         <label for="location">Location:</label>
         <input type="text" id="location" name="location" value="<%= store.location %>">
 
+        <!-- Input field for manager ID -->
         <label for="mgrid">Manager ID:</label>
         <input type="text" id="mgrid" name="mgrid" value="<%= store.mgrid %>">
 
-        <!-- Add other fields as needed -->
+        <!-- Additional fields can be added as needed -->
 
+        <!-- Submit button to update store information -->
         <button type="submit">Update Store</button>
     </form>
 </section>

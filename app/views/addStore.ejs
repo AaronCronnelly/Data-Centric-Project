@@ -2,16 +2,23 @@
 
 <%- include('layout'); -%>
 
+<!-- Section for adding a new store -->
 <section>
+    <!-- Heading for the section -->
     <h2>Add Store</h2>
 
+    <!-- Form for adding a new store -->
     <form action="/stores/add" method="post">
+
+        <!-- Input field for store location -->
         <label for="location">Location:</label>
         <input type="text" id="location" name="location" required>
 
+        <!-- Input field for manager ID -->
         <label for="mgrid">Manager ID:</label>
         <input type="text" id="mgrid" name="mgrid" required>
 
+        <!-- Submit button to add the new store -->
         <button type="submit">Add Store</button>
     </form>
 </section>

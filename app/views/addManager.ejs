@@ -2,21 +2,32 @@
 
 <%- include('layout'); -%>
 
+<!-- Section for adding a new manager -->
 <section>
+    <!-- Heading for the section -->
     <h2>Add Manager</h2>
+
+    <!-- Display error message if it exists -->
     <% if (error) { %>
         <p style="color: red;"><%= error %></p>
     <% } %>
+
+    <!-- Form for adding a new manager with required fields -->
     <form action="/managers/add" method="post">
+
+        <!-- Input field for Manager ID -->
         <label for="managerId">Manager ID:</label>
         <input type="text" id="managerId" name="managerId" required minlength="4" maxlength="4">
 
+        <!-- Input field for Manager Name -->
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required minlength="5">
 
+        <!-- Input field for Manager Salary -->
         <label for="salary">Salary:</label>
         <input type="number" id="salary" name="salary" required min="30000" max="70000">
 
+        <!-- Submit button to add a new manager -->
         <button type="submit">Add Manager</button>
     </form>
 </section>
