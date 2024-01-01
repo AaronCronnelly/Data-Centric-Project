@@ -95,7 +95,6 @@ app.post('/stores/edit/:sid', async (req, res, next) => {
 
     try {
         // Perform validation and update operation in the database
-        // You need to implement the update operation using your queryMySQL function
         await queryMySQL('UPDATE store SET location=?, mgrid=? WHERE sid=?', [location, mgrid, sid]);
 
         // Redirect to the stores page after updating
@@ -117,6 +116,27 @@ app.get('/stores/edit/:sid', async (req, res, next) => {
         next(err);
     }
 });
+
+// code is here to add a store but cannot change SID, 
+app.get('/stores/add', (req, res) => {
+    res.render('addStore', { layout: 'layout', content: 'Add Store Page' });
+});
+
+app.post('/stores/add', async (req, res, next) => {
+    const { location, mgrid } = req.body;
+
+    try {
+        // Perform validation and insert operation in the database
+        await queryMySQL('INSERT INTO store (location, mgrid) VALUES (?, ?)', [location, mgrid]);
+
+        // Redirect to the stores page after adding the new store
+        res.redirect('/stores');
+    } catch (err) {
+        console.error('Error adding store: ' + err);
+        next(err);
+    }
+});
+
 
 // Products Page
 app.get('/products', async (req, res, next) => {
